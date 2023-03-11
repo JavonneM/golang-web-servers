@@ -1,9 +1,7 @@
-package types
+package gatewaytypes
 
 type MusicApiPlaylistResponse struct {
-    id int
-    title string
-    songs []MusicApiSongResponse
+	Id    int
+	Title string
+	Songs []MusicApiSongResponse
 }
-
-

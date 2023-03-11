@@ -1,9 +1,9 @@
 package gateways
+
 import (
-    "api/server/gateways/types"
+	gatewayTypes "gatewaytypes"
 )
+
 type MusicApi interface {
-    getPlaylists() []MusicApiPlaylistResponse 
+	getPlaylists() []gatewayTypes.MusicApiPlaylistResponse
 }
-
-
