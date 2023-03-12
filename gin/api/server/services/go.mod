@@ -1,3 +1,3 @@
-module services
+module Services
 
 go 1.20

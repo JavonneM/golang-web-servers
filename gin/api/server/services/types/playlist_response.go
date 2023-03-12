@@ -1,6 +1,6 @@
-package types
+package ServiceTypes
 type PlaylistResponse struct {
-    id string `json:"id"`
-    title string `json:"title"`
-    songs string `json:"songs"`
+    Id string
+    Title string
+    Songs []SongResponse
 }

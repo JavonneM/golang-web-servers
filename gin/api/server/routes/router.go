@@ -3,11 +3,20 @@ package routes
 import (
     "github.com/gin-gonic/gin"
 )
-func CreateRoutes() gin.Engine {
-    router := gin.Default()
 
-    //playlistRouter := router.Group("v1")
+func BuildAllRouters() *gin.Engine {
+    engine := gin.Default()
+
+    buildV1Routers(engine)
+    
+    
 
 
-    return *router;
+    return engine;
+}
+
+func buildV1Routers(engine *gin.Engine) {
+    versionRouterGroup := engine.Group("v1")
+    CreateRoutes(versionRouterGroup)
+    //SongRouter.CreateRoutes(versionRouterGroup)
 }

@@ -1,3 +1,3 @@
-module types
+module ServiceTypes
 
 go 1.20

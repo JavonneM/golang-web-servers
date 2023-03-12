@@ -1,15 +1,15 @@
 package main
 
 import (
-	"fmt"
+	//"fmt"
 	// "net/http"
-	// "github.com/gin-gonic/gin"
-	gateway "gateways"
+	//"github.com/gin-gonic/gin"
+    Router "routes"
+	//gateway "gateways"
 )
 
 func main() {
-	test := gateway.Songs
-	fmt.Println(test[0].Id)
+    Router.BuildAllRouters().Run()
 	/*
 	   r := gin.Default()
 	   r.GET("/ping", func(c *gin.Context) {

@@ -5,5 +5,6 @@ import (
 )
 
 type MusicApi interface {
-	getPlaylists() []gatewayTypes.MusicApiPlaylistResponse
+	GetPlaylists() []gatewayTypes.MusicApiPlaylistResponse
+    GetAllSongs() []gatewayTypes.MusicApiSongResponse
 }
