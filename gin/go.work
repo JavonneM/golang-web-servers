@@ -1,6 +1,7 @@
 go 1.20
 
 use ./cmd/web_server/
+use ./api/server/apperrors/
 use ./api/server/gateways/
 use ./api/server/gateways/types
 use ./api/server/routes/
