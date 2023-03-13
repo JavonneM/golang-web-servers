@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func CreateRoutes(parentRouter *gin.RouterGroup) {
+func CreatePlaylistRoutes(parentRouter *gin.RouterGroup) {
     //router := PlaylistRouter{}
     playlistRouterGroup := parentRouter.Group("playlist")
     playlistRouterGroup.GET("/all", getPlaylists)
