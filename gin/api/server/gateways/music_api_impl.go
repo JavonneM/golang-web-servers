@@ -1,6 +1,10 @@
 package gateways
 
-import gatewayTypes "gatewaytypes"
+import (
+    "errors"
+    BaseErrors "apperrors"
+    gatewayTypes "gatewaytypes"
+)
 
 var playlistResponse = []gatewayTypes.MusicApiPlaylistResponse{
 	{Id: 0, Title: "Default", Songs: []gatewayTypes.MusicApiSongResponse{
@@ -23,6 +27,7 @@ var songs = []gatewayTypes.MusicApiSongResponse{
 	{Id: 4, Title: "Song D", Url: "https://bash.com/test.mp4", Description: "this is song D"},
 	{Id: 5, Title: "Song E", Url: "https://bash.com/test.mp4", Description: "this is song E"},
 }
+
 type MusicApiImpl struct {
     allSongs []gatewayTypes.MusicApiSongResponse
     allPlaylists []gatewayTypes.MusicApiPlaylistResponse 
@@ -37,10 +42,12 @@ func NewMusicApi() MusicApi {
 
 
 
-func (musicApi MusicApiImpl) GetPlaylists() []gatewayTypes.MusicApiPlaylistResponse {
- 	return musicApi.allPlaylists
+func (musicApi MusicApiImpl) GetPlaylists() ([]gatewayTypes.MusicApiPlaylistResponse, BaseErrors.GatewayErrorInterface) {
+ 	return musicApi.allPlaylists, nil
 }
 
-func (musicApi MusicApiImpl) GetAllSongs() []gatewayTypes.MusicApiSongResponse {
- 	return musicApi.allSongs
+func (musicApi MusicApiImpl) GetAllSongs() ([]gatewayTypes.MusicApiSongResponse, BaseErrors.GatewayErrorInterface) {
+    return nil, BaseErrors.NewGatewayError(500, "Error Text", errors.New("Raw error obj") , "MusicApi")
+ 	//return musicApi.allSongs
 }
+

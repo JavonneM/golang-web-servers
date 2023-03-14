@@ -1,6 +1,9 @@
 package Services
-import ST "ServiceTypes"
+import (
+    BaseErrors "apperrors"
+    ST "ServiceTypes"
+)
 type SongService interface {
-    GetSongs() []ST.SongResponse
+    GetSongs() ([]ST.SongResponse, BaseErrors.BaseErrorInterface)
 }
 

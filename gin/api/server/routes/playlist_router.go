@@ -15,10 +15,8 @@ func CreatePlaylistRoutes(parentRouter *gin.RouterGroup) {
 
 func getPlaylists(c *gin.Context) {
     playlistService := Services.NewPlaylistService()
-    data := playlistService.GetPlaylists()
+    data, err := playlistService.GetPlaylists()
 
-    c.JSON(200, gin.H {
-        "data": data,
-    })
+    SendResponse(c, 200, data, err)
 }
 

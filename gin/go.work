@@ -4,6 +4,7 @@ use ./cmd/web_server/
 use ./api/server/apperrors/
 use ./api/server/gateways/
 use ./api/server/gateways/types
+use ./api/server/middleware/
 use ./api/server/routes/
 use ./api/server/services/
 use ./api/server/services/types/

@@ -2,7 +2,6 @@ package routes
 
 import (
 	"Services"
-
 	"github.com/gin-gonic/gin"
 )
 
@@ -13,10 +12,8 @@ func CreateSongRoutes(parentRouter *gin.RouterGroup) {
 
 func SongGetSongs(c *gin.Context) {
     songService := Services.NewSongService()
-    data := songService.GetSongs()
-
-    c.JSON(200, gin.H {
-        "data": data,
-    })
+    data, err := songService.GetSongs()
+    
+    SendResponse(c, 200, data, err)
 }
 

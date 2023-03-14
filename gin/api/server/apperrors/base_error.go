@@ -11,42 +11,37 @@ const (
 )
 
 type BaseErrorInterface interface {
-    RawErrorObj() error 
+    Error() string
     ErrorType() int 
-    ErrorMesage() string
+    ErrorMessage() string
+    ErrorStatusCode() int
 }
 
 type BaseErrorStruct struct {
-
     rawError error
     errorType int
     message string
+    httpCode int
 }
-type GatewayErrorStruct struct {
-    BaseErrorStruct
-    domain string
+
+func (error BaseErrorStruct) Error() string {
+    return error.rawError.Error()
 }
+func (error BaseErrorStruct) ErrorType() int {
+    return error.errorType
+}
+func (error BaseErrorStruct) ErrorMessage() string {
+    return error.message
+}
+func (error BaseErrorStruct) ErrorStatusCode() int {
+    return error.httpCode
+}
+
+
 func dumpStack() string {
     buf := make([]byte, 1<<16)
     runtime.Stack(buf, true)
     return string(buf)
 }
 
-func NewGatewayError(errorText string, rawError error, domain string) BaseError {
-    return GatewayErrorStruct {
-        rawError: rawError, 
-        errorType: GatewayErrorType,
-        message: errorText,
-        domain: domain,
-    }
-}
 
-
-func NewServiceError(errorText string, rawError error, domain string) BaseError {
-    return GatewayErrorStruct {
-        rawError: rawError, 
-        errorType: GatewayErrorType,
-        message: errorText,
-        domain: domain,
-    }
-}

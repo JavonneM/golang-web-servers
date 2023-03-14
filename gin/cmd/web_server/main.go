@@ -1,23 +1,20 @@
 package main
 
 import (
-	//"fmt"
-	// "net/http"
-	//"github.com/gin-gonic/gin"
+    "fmt"
+	"github.com/gin-gonic/gin"
     Router "routes"
-	//gateway "gateways"
+    Middleware "middleware"
 )
 
 func main() {
-    Router.BuildAllRouters().Run()
-	/*
-	   r := gin.Default()
-	   r.GET("/ping", func(c *gin.Context) {
-	       c.JSON(http.StatusOK, gin.H {
-	           "message": "pong",
-	       })
-	   })
-	   r.Run()
-	*/
-	//CreateRoutes();
+    engine := gin.Default()
+
+    fmt.Printf("Enabling Tracing middleware\n")
+    engine.Use(Middleware.TracerMiddleware())
+    fmt.Printf("Enabling Logging middleware\n")
+    engine.Use(Middleware.LoggerMiddleware())
+
+    Router.BuildAllRouters(engine)
+    engine.Run()
 }
