@@ -1,8 +1,8 @@
 go 1.20
 
-use apperrors
 
 use (
 	.
 	middleware
+    apperrors
 )

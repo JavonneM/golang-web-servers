@@ -25,6 +25,16 @@ func init() {
 				&controllers.UserController{},
 			),
 		),
+        beego.NSNamespace("/songs",
+            beego.NSInclude(
+                &controllers.SongController{},
+            ),
+        ),
+        beego.NSNamespace("/playlist",
+            beego.NSInclude(
+                &controllers.PlaylistController{},
+            ),
+        ),
 	)
 	beego.AddNamespace(ns)
 }

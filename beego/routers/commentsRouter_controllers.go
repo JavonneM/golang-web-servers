@@ -52,6 +52,24 @@ func init() {
             Filters: nil,
             Params: nil})
 
+    beego.GlobalControllerRouter["beego/controllers:PlaylistController"] = append(beego.GlobalControllerRouter["beego/controllers:PlaylistController"],
+        beego.ControllerComments{
+            Method: "GetAllPlaylists",
+            Router: "/all",
+            AllowHTTPMethods: []string{"get"},
+            MethodParams: param.Make(),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["beego/controllers:SongController"] = append(beego.GlobalControllerRouter["beego/controllers:SongController"],
+        beego.ControllerComments{
+            Method: "GetAllSongs",
+            Router: "/all",
+            AllowHTTPMethods: []string{"get"},
+            MethodParams: param.Make(),
+            Filters: nil,
+            Params: nil})
+
     beego.GlobalControllerRouter["beego/controllers:UserController"] = append(beego.GlobalControllerRouter["beego/controllers:UserController"],
         beego.ControllerComments{
             Method: "Post",
