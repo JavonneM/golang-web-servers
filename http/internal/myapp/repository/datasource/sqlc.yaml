@@ -1,0 +1,10 @@
+version: "2"
+sql:
+  - engine: "postgresql"
+    queries: "internal/myapp/repository/datasource/query.sql"
+    schema: "internal/myapp/repository/datasource/schema.sql"
+    gen:
+      go:
+        package: "tutorial"
+        out: "tutorial"
+        sql_package: "pgx/v5"

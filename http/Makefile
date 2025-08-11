@@ -11,5 +11,11 @@ build:
 run: build
 	./$(BINARY_NAME)
 
+migrate: build 
+	./$(BINARY_NAME) --mode migration
+
+server: build 
+	./$(BINARY_NAME) --mode server
+
 clean:
 	rm -f $(BINARY_NAME)
