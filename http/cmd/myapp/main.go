@@ -105,6 +105,7 @@ func configureEnvs() (EnvVars, error) {
 }
 
 func main() {
+	// Extract Env vars
 	flags, err := setupFlags()
 	if err != nil {
 		fmt.Println(err)
@@ -116,6 +117,7 @@ func main() {
 		os.Exit(1)
 	}
 
+	// Setup Deps
 	dbWrapper, err := database.NewPostgresDatabase(
 		config.DatabaseHost,
 		config.DatabaseName,
@@ -127,6 +129,7 @@ func main() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+	// Do the job
 
 	if flags.Mode.String() == ModeMigration {
 		fmt.Println("Migration")
