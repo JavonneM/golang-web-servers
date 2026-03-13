@@ -3,7 +3,7 @@ package repository_test
 import (
 	"testing"
 
-	"github.com/javonnem/web_server/http/internal/myapp/repository"
+	"github.com/javonnem/web_server/http/internal/myapp/db"
 	"github.com/stretchr/testify/assert"
 )
 

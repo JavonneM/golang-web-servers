@@ -11,11 +11,16 @@ build:
 run: build
 	./$(BINARY_NAME)
 
-migrate: build 
-	./$(BINARY_NAME) --mode migration
+migrate: 
+	sqlc generate -f ./internal/myapp/db/sqlc.yaml
+	# goose -dir migrations postgres "user=postgres dbname=myapp sslmode=disable" status
+	#./$(BINARY_NAME) --mode migration
 
 server: build 
 	./$(BINARY_NAME) --mode server
+
+deps:
+	docker-compose -f ./build/docker-compose.yaml up --detach
 
 clean:
 	rm -f $(BINARY_NAME)

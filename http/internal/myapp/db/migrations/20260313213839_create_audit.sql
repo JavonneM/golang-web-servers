@@ -1,7 +1,8 @@
+-- +goose Up
 CREATE TABLE AUDIT_OPERATION(
     operation_name text primary key,
     created_at timestampz,
-    updated_at timestampz,
+    updated_at timestampz
 );
 
 CREATE TABLE AUDIT_CALL (
@@ -9,6 +10,13 @@ CREATE TABLE AUDIT_CALL (
     result text,
     exception text,
     created_at timestampz,
-    updated_at timestampz,
+    updated_at timestampz
 );
+
+
+-- +goose Down
+
+Drop table AUDIT_CALL;
+Drop table AUDIT_OPERATION;
+
 
