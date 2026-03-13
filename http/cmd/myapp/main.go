@@ -5,14 +5,16 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"github.com/go-playground/sensitive"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
+	"github.com/go-playground/sensitive"
+
 	"github.com/javonnem/web_server/http/internal/myapp"
+	"github.com/javonnem/web_server/http/pkg/database"
 )
 
 func SetupHttpServer() (*myapp.MyAppServer, error) {
@@ -65,26 +67,71 @@ func setupFlags() (ConfiguredFlags, error) {
 
 type EnvVars struct {
 	DatabaseHost     string
+	DatabaseName     string
 	DatabasePort     string
 	DatabaseUsername sensitive.String
 	DatabasePassword sensitive.String
 }
 
-func configureEnvs() EnvVars {
+var ErrEnvMissingVariable = errors.New("missing env var")
+
+func configureEnvs() (EnvVars, error) {
 	v := EnvVars{}
-	return v
+	var exists bool
+	v.DatabaseHost, exists = os.LookupEnv("DATABASE_HOST")
+	if exists && v.DatabaseHost != "" {
+		return v, fmt.Errorf("database host missing %w", ErrEnvMissingVariable)
+	}
+	v.DatabaseName, exists = os.LookupEnv("DATABASE_NAME")
+	if exists && v.DatabaseHost != "" {
+		return v, fmt.Errorf("database name missing %w", ErrEnvMissingVariable)
+	}
+	v.DatabasePort, exists = os.LookupEnv("DATABASE_PORT")
+	if exists && v.DatabasePort != "" {
+		return v, fmt.Errorf("database port missing %w", ErrEnvMissingVariable)
+	}
+	temp, exists := os.LookupEnv("DATABASE_USERNAME")
+	if exists && temp != "" {
+		return v, fmt.Errorf("database username missing %w", ErrEnvMissingVariable)
+	}
+	v.DatabaseUsername = sensitive.String(temp)
+
+	temp, exists = os.LookupEnv("DATABASE_PASSWORD")
+	if exists && temp != "" {
+		return v, fmt.Errorf("database password missing %w", ErrEnvMissingVariable)
+	}
+	v.DatabasePassword = sensitive.String(temp)
+	return v, nil
 }
 
 func main() {
 	flags, err := setupFlags()
-	_ = configureEnvs()
 	if err != nil {
+		fmt.Println(err)
 		os.Exit(1)
 	}
+	config, err := configureEnvs()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	dbWrapper, err := database.NewPostgresDatabase(
+		config.DatabaseHost,
+		config.DatabaseName,
+		config.DatabaseUsername,
+		config.DatabasePassword,
+		config.DatabasePort,
+	)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
 	if flags.Mode.String() == ModeMigration {
-		println("Migration")
+		fmt.Println("Migration")
 	} else if flags.Mode.String() == ModeHttpServer {
-		println("Server mode")
+		fmt.Println("Server mode")
 		s, err := SetupHttpServer()
 		if err != nil {
 			panic(err)
@@ -94,7 +141,7 @@ func main() {
 			// Start Server
 			err = s.StartServer()
 			if errors.Is(err, http.ErrServerClosed) {
-				println("server closed")
+				fmt.Println("server closed")
 			} else if err != nil {
 				fmt.Printf("err? %s", err.Error())
 			}
@@ -105,15 +152,25 @@ func main() {
 
 		// Block for signal
 		<-sigChan
-		println("recieved signal")
-		c, cancelCtx := context.WithTimeout(context.Background(), 10*time.Second)
-		println("starting shutdown")
-		s.Shutdown(c)
-		println("forcing cancel")
-		cancelCtx()
+		fmt.Println("exiting due to signal")
+		c, serverCancelCtx := context.WithTimeout(context.Background(), 10*time.Second)
+		fmt.Println("starting shutdown")
 		// Shutdown consumers
 		// Shutdown Server
+		fmt.Println("shutting down http server")
+		err = s.Shutdown(c)
+		if err != nil {
+			fmt.Println("http server graceful shutdown failed forcing cancel")
+			serverCancelCtx()
+		} else {
+			fmt.Println("http server graceful shutdown complete")
+		}
 		// Shutdown DB conn
-		println("exiting due to signal")
+		err = dbWrapper.Close()
+		if err != nil {
+			fmt.Println("db connection failed to shutdown gracefully")
+			fmt.Println(err)
+			os.Exit(1)
+		}
 	}
 }
