@@ -7,35 +7,29 @@ import (
 	_ "github.com/lib/pq" // Driver import
 )
 
-type DatabaseWrapper interface {
-	Close() error
-}
+func NewPostgresDatabase(host string, databasename string, username sensitive.String, password sensitive.String, port string) (*sql.DB, error) {
+	dsname := fmt.Sprintf(
+		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+		host,
+		port,
+		string(username),
+		string(password),
+		databasename,
+	)
+	fmt.Println(dsname)
 
-type DatabaseImpl struct {
-	Conn *sql.DB
-}
-
-func NewPostgresDatabase(host string, databasename string, username sensitive.String, password sensitive.String, port string) (DatabaseWrapper, error) {
 	connection, err := sql.Open(
 		"postgres",
-		fmt.Sprintf(
-			"%s:%s@%s:%s/%s",
-			string(username),
-			string(password),
-			host,
-			port,
-			databasename,
-		),
+		dsname,
 	)
 	if err != nil {
 		return nil, err
 	}
 	fmt.Println("database connection established")
-	return DatabaseImpl{
-		Conn: connection,
-	}, nil
-}
-
-func (db DatabaseImpl) Close() error {
-	return db.Conn.Close()
+	fmt.Println("database: ping test")
+	err = connection.Ping()
+	if err != nil {
+		return nil, fmt.Errorf("database ping test failed %w", err)
+	}
+	return connection, nil
 }

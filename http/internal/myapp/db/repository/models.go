@@ -9,15 +9,15 @@ import (
 )
 
 type AuditCall struct {
-	ID        pgtype.UUID `json:"id"`
-	Result    pgtype.Text `json:"result"`
-	Exception pgtype.Text `json:"exception"`
-	CreatedAt interface{} `json:"created_at"`
-	UpdatedAt interface{} `json:"updated_at"`
+	ID        pgtype.UUID        `json:"id"`
+	Result    pgtype.Text        `json:"result"`
+	Exception pgtype.Text        `json:"exception"`
+	CreatedAt pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt pgtype.Timestamptz `json:"updated_at"`
 }
 
 type AuditOperation struct {
-	OperationName string      `json:"operation_name"`
-	CreatedAt     interface{} `json:"created_at"`
-	UpdatedAt     interface{} `json:"updated_at"`
+	OperationName string             `json:"operation_name"`
+	CreatedAt     pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt     pgtype.Timestamptz `json:"updated_at"`
 }

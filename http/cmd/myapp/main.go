@@ -14,6 +14,7 @@ import (
 	"github.com/go-playground/sensitive"
 
 	"github.com/javonnem/web_server/http/internal/myapp"
+	repository "github.com/javonnem/web_server/http/internal/myapp/db"
 	"github.com/javonnem/web_server/http/pkg/database"
 )
 
@@ -79,26 +80,26 @@ func configureEnvs() (EnvVars, error) {
 	v := EnvVars{}
 	var exists bool
 	v.DatabaseHost, exists = os.LookupEnv("DATABASE_HOST")
-	if exists && v.DatabaseHost != "" {
-		return v, fmt.Errorf("database host missing %w", ErrEnvMissingVariable)
+	if !exists || v.DatabaseHost == "" {
+		return v, fmt.Errorf("config: database host missing %w", ErrEnvMissingVariable)
 	}
 	v.DatabaseName, exists = os.LookupEnv("DATABASE_NAME")
-	if exists && v.DatabaseHost != "" {
-		return v, fmt.Errorf("database name missing %w", ErrEnvMissingVariable)
+	if !exists || v.DatabaseHost == "" {
+		return v, fmt.Errorf("config: database name missing %w", ErrEnvMissingVariable)
 	}
 	v.DatabasePort, exists = os.LookupEnv("DATABASE_PORT")
-	if exists && v.DatabasePort != "" {
-		return v, fmt.Errorf("database port missing %w", ErrEnvMissingVariable)
+	if !exists || v.DatabasePort == "" {
+		return v, fmt.Errorf("config: database port missing %w", ErrEnvMissingVariable)
 	}
 	temp, exists := os.LookupEnv("DATABASE_USERNAME")
-	if exists && temp != "" {
-		return v, fmt.Errorf("database username missing %w", ErrEnvMissingVariable)
+	if !exists || temp == "" {
+		return v, fmt.Errorf("config: database username missing %w", ErrEnvMissingVariable)
 	}
 	v.DatabaseUsername = sensitive.String(temp)
 
 	temp, exists = os.LookupEnv("DATABASE_PASSWORD")
-	if exists && temp != "" {
-		return v, fmt.Errorf("database password missing %w", ErrEnvMissingVariable)
+	if !exists || temp == "" {
+		return v, fmt.Errorf("config: database password missing %w", ErrEnvMissingVariable)
 	}
 	v.DatabasePassword = sensitive.String(temp)
 	return v, nil
@@ -118,7 +119,7 @@ func main() {
 	}
 
 	// Setup Deps
-	dbWrapper, err := database.NewPostgresDatabase(
+	dbconn, err := database.NewPostgresDatabase(
 		config.DatabaseHost,
 		config.DatabaseName,
 		config.DatabaseUsername,
@@ -129,10 +130,16 @@ func main() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+	defer dbconn.Close()
 	// Do the job
 
 	if flags.Mode.String() == ModeMigration {
 		fmt.Println("Migration")
+		err = repository.Migrate(dbconn)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
 	} else if flags.Mode.String() == ModeHttpServer {
 		fmt.Println("Server mode")
 		s, err := SetupHttpServer()
@@ -167,13 +174,6 @@ func main() {
 			serverCancelCtx()
 		} else {
 			fmt.Println("http server graceful shutdown complete")
-		}
-		// Shutdown DB conn
-		err = dbWrapper.Close()
-		if err != nil {
-			fmt.Println("db connection failed to shutdown gracefully")
-			fmt.Println(err)
-			os.Exit(1)
 		}
 	}
 }
