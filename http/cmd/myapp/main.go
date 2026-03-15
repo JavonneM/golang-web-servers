@@ -15,17 +15,19 @@ import (
 
 	"github.com/javonnem/web_server/http/internal/myapp"
 	repository "github.com/javonnem/web_server/http/internal/myapp/db"
+	"github.com/javonnem/web_server/http/internal/myapp/handler"
+	"github.com/javonnem/web_server/http/internal/myapp/service"
 	"github.com/javonnem/web_server/http/pkg/database"
 )
 
-func SetupHttpServer() (*myapp.MyAppServer, error) {
+func SetupHttpServer(rootCtx context.Context, sh handler.SystemHandler) (*myapp.MyAppServer, error) {
 	var s *myapp.MyAppServer
 	s, err := s.NewServer()
 	if err != nil {
 		return s, fmt.Errorf("failed to create server %w", err)
 	}
 
-	err = s.RegisterRoutes()
+	err = s.RegisterRoutes(rootCtx, sh)
 	if err != nil {
 		return s, fmt.Errorf("failed to register server routes %w", err)
 	}
@@ -118,6 +120,7 @@ func main() {
 		os.Exit(1)
 	}
 
+	rootContext := context.Background()
 	// Setup Deps
 	dbconn, err := database.NewPostgresDatabase(
 		config.DatabaseHost,
@@ -131,6 +134,11 @@ func main() {
 		os.Exit(1)
 	}
 	defer dbconn.Close()
+	/// Repositories
+	/// Services
+	ss := service.NewSystemService(dbconn)
+	/// Handlers
+	sh := handler.NewSystemHandler(ss)
 	// Do the job
 
 	if flags.Mode.String() == ModeMigration {
@@ -142,7 +150,7 @@ func main() {
 		}
 	} else if flags.Mode.String() == ModeHttpServer {
 		fmt.Println("Server mode")
-		s, err := SetupHttpServer()
+		s, err := SetupHttpServer(rootContext, sh)
 		if err != nil {
 			panic(err)
 		}
@@ -163,7 +171,7 @@ func main() {
 		// Block for signal
 		<-sigChan
 		fmt.Println("exiting due to signal")
-		c, serverCancelCtx := context.WithTimeout(context.Background(), 10*time.Second)
+		c, serverCancelCtx := context.WithTimeout(rootContext, 10*time.Second)
 		fmt.Println("starting shutdown")
 		// Shutdown consumers
 		// Shutdown Server

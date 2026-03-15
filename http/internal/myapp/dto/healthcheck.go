@@ -1,5 +1,6 @@
 package dto
 
 type HealthCheckResponse struct {
-	SomeText string `json:"some_text"`
+	ServerStatusSuccess   bool `json:"server_status_success"`
+	DatabaseStatusSuccess bool `json:"database_status_success"`
 }

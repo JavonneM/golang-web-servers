@@ -3,6 +3,7 @@ module github.com/javonnem/web_server/http
 go 1.25.0
 
 require (
+	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/jackc/pgx/v5 v5.8.0
 	github.com/lib/pq v1.11.2
 	github.com/pressly/goose/v3 v3.27.0

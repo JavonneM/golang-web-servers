@@ -2,9 +2,10 @@ package server
 
 import (
 	"context"
-	"encoding/json"
+	// "encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 )
 
 type AppServer interface {
@@ -30,14 +31,14 @@ func (hs *HttpServer) NewHttpServer() (*HttpServer, error) {
 	}, nil
 }
 
-func (hs *HttpServer) CreateRawRoute(route string, handler Middleware) error {
+func (hs *HttpServer) CreateRoute(rootCtx context.Context, route string, handler http.HandlerFunc, middleware ...Middleware) error {
 	if hs == nil {
 		return fmt.Errorf("http server reciever nil")
 	}
 	if hs.Mux == nil {
 		return fmt.Errorf("internal http server nil")
 	}
-	return hs.createRoute(route, []Middleware{handler})
+	return hs.createRoute(rootCtx, route, handler, middleware...)
 }
 
 func (hs *HttpServer) CreateRouteWithDefaultMiddleware() error {
@@ -50,24 +51,40 @@ func (hs *HttpServer) CreateRouteWithDefaultMiddleware() error {
 	return nil
 }
 
-func (hs *HttpServer) createRoute(route string, middleware []Middleware) error {
+const defaultHttpTimeout = 30 * time.Second
+
+func ChainMiddleware(h http.Handler, m ...Middleware) http.Handler {
+	for i := len(m) - 1; i >= 0; i-- {
+		h = m[i](h.ServeHTTP)
+	}
+	return h
+}
+
+func (hs *HttpServer) createRoute(rootCtx context.Context, route string, handler http.HandlerFunc, middleware ...Middleware) error {
 	hs.Mux.HandleFunc(route, func(w http.ResponseWriter, r *http.Request) {
-		var err error
-		var res any
-		for _, mware := range middleware {
-			res, err = mware(nil)
-			if err != nil {
-				break
-			}
-		}
+		/// TODO(JavonneM): Fix middleware handling
+		// var err error
+		// var res any
 
+		// for _, mware := range middleware {
+		// 	res, err = mware(appContext)
+		// 	if err != nil {
+		// 		break
+		// 	}
+		// }
+		h := ChainMiddleware(handler, middleware...)
+		h.ServeHTTP(w, r)
 		// execute handler
-		if err != nil {
-			println(res)
-		}
-		payload, err := json.Marshal(&res)
-
-		_, err = w.Write(payload)
+		// if err != nil {
+		// 	fmt.Println(res)
+		// 	fmt.Println(err)
+		// }
+		// payload, err := json.Marshal(&res)
+		// if err != nil {
+		// 	fmt.Println(err)
+		// }
+		// // TODO(JavonneM): Write status code back, retrieve from error
+		// _, err = w.Write(payload)
 	})
 	return nil
 }

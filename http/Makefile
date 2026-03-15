@@ -21,6 +21,8 @@ server: build
 
 deps:
 	docker-compose -f ./build/docker-compose.yaml up --detach
+depsdown:
+	docker-compose -f ./build/docker-compose.yaml down
 
 clean:
 	rm -f $(BINARY_NAME)
