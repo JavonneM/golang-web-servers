@@ -61,31 +61,7 @@ func ChainMiddleware(h http.Handler, m ...Middleware) http.Handler {
 }
 
 func (hs *HttpServer) createRoute(rootCtx context.Context, route string, handler http.HandlerFunc, middleware ...Middleware) error {
-	hs.Mux.HandleFunc(route, func(w http.ResponseWriter, r *http.Request) {
-		/// TODO(JavonneM): Fix middleware handling
-		// var err error
-		// var res any
-
-		// for _, mware := range middleware {
-		// 	res, err = mware(appContext)
-		// 	if err != nil {
-		// 		break
-		// 	}
-		// }
-		h := ChainMiddleware(handler, middleware...)
-		h.ServeHTTP(w, r)
-		// execute handler
-		// if err != nil {
-		// 	fmt.Println(res)
-		// 	fmt.Println(err)
-		// }
-		// payload, err := json.Marshal(&res)
-		// if err != nil {
-		// 	fmt.Println(err)
-		// }
-		// // TODO(JavonneM): Write status code back, retrieve from error
-		// _, err = w.Write(payload)
-	})
+	hs.Mux.Handle(route, ChainMiddleware(handler, middleware...)) 
 	return nil
 }
 

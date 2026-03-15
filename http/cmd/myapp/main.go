@@ -20,7 +20,7 @@ import (
 	"github.com/javonnem/web_server/http/pkg/database"
 )
 
-func SetupHttpServer(rootCtx context.Context, sh handler.SystemHandler) (*myapp.MyAppServer, error) {
+func NewHttpServer(rootCtx context.Context, sh handler.SystemHandler) (*myapp.MyAppServer, error) {
 	var s *myapp.MyAppServer
 	s, err := s.NewServer()
 	if err != nil {
@@ -150,7 +150,7 @@ func main() {
 		}
 	} else if flags.Mode.String() == ModeHttpServer {
 		fmt.Println("Server mode")
-		s, err := SetupHttpServer(rootContext, sh)
+		s, err := NewHttpServer(rootContext, sh)
 		if err != nil {
 			panic(err)
 		}

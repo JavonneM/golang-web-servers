@@ -4,9 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"time"
 
-	"github.com/javonnem/web_server/http/internal/myapp/dto"
 	"github.com/javonnem/web_server/http/internal/myapp/service"
 )
 
@@ -24,17 +22,15 @@ func NewSystemHandler(s service.SystemService) SystemHandler {
 	}
 }
 
-func (*SystemHandlerImpl) HealthCheck(w http.ResponseWriter, r *http.Request) {
-	time.Sleep(5 * time.Second)
-
-	response := &dto.HealthCheckResponse{
-		ServerStatusSuccess:   true,
-		DatabaseStatusSuccess: false,
-	}
+func (sh *SystemHandlerImpl) HealthCheck(w http.ResponseWriter, r *http.Request) {
+	// Process input
+	response, err := sh.SystemService.HealthCheck()
 	responseAsBytes, err := json.Marshal(response)
 	if err != nil {
 		/// fail
 		fmt.Println("failed to marshal response")
+		w.WriteHeader(500)
+		return
 	}
 	w.Write(responseAsBytes)
 }
