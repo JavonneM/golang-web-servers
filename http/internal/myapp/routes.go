@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/javonnem/web_server/http/internal/myapp/dto"
 	"github.com/javonnem/web_server/http/internal/myapp/handler"
 	"github.com/javonnem/web_server/http/pkg/server"
 	"github.com/javonnem/web_server/http/pkg/server/middleware"
@@ -32,7 +33,12 @@ func (*MyAppServer) NewServer() (*MyAppServer, error) {
 }
 
 func (s *MyAppServer) registerSystemRoutes(rootCtx context.Context, sh handler.SystemHandler) error {
-	err := s.CreateRoute(rootCtx, "/healthcheck", sh.HealthCheck, middleware.Logger)
+	err := s.CreateRoute(rootCtx, "/v1/healthcheck", sh.HealthCheck, middleware.Logger)
+	if err != nil {
+		return fmt.Errorf("failed to register healthcheck route %w", err)
+	}
+
+	err = s.CreateRouteWithApiHandling(rootCtx, "/v1/testapihandler", server.ApiHandler[dto.TestApiHandlerRequest](sh.TestApiHandler, false), middleware.Logger)
 	if err != nil {
 		return fmt.Errorf("failed to register healthcheck route %w", err)
 	}
@@ -57,7 +63,6 @@ func (s *MyAppServer) registerAppRoutes(rootCtx context.Context, sh handler.Syst
 
 }
 
-
 func (s *MyAppServer) RegisterRoutes(rootCtx context.Context, sh handler.SystemHandler) error {
 	// Bind system endpoints
 	err := s.registerSystemRoutes(rootCtx, sh)
@@ -66,7 +71,6 @@ func (s *MyAppServer) RegisterRoutes(rootCtx context.Context, sh handler.SystemH
 	}
 	return nil
 }
-
 
 func (s *MyAppServer) StartServer() error {
 	return s.Listen()

@@ -9,3 +9,7 @@ var ErrHttpBadRequestError = errors.New("unable to decode request")
 
 // Http 500
 var ErrHttpInternalServerError = errors.New("internal server error")
+
+type HttpError struct {
+	Error error `json:"error"`
+}

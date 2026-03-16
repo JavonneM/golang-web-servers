@@ -2,7 +2,7 @@ package server
 
 import (
 	"context"
-	// "encoding/json"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
@@ -20,6 +20,34 @@ type HttpServer struct {
 	DefaultMiddlewareStack []Middleware
 }
 
+type HandlerResponse struct {
+	ProtocolResponseCode int
+	Data                 any
+}
+
+func ApiHandler[T any](h func(r *http.Request, body T) HandlerResponse, validate bool) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var body T
+		err := json.NewDecoder(r.Body).Decode(&body)
+		if err != nil {
+			http.Error(w, "invalid request body", http.StatusBadRequest)
+			return
+		}
+		res := h(r, body)
+		// prepare response
+		resAsBytes, err := json.Marshal(res.Data)
+		if err != nil {
+			// reply with marshaling error
+			http.Error(w, "unable to encode response", http.StatusInternalServerError)
+			return
+		}
+		// reply with normal response
+		// TODO(JavonneM): set json header
+		w.WriteHeader(res.ProtocolResponseCode)
+		w.Write(resAsBytes)
+	})
+}
+
 func (hs *HttpServer) NewHttpServer() (*HttpServer, error) {
 	if hs != nil {
 		return nil, fmt.Errorf("unable to start a new server using current instance")
@@ -31,7 +59,12 @@ func (hs *HttpServer) NewHttpServer() (*HttpServer, error) {
 	}, nil
 }
 
-func (hs *HttpServer) CreateRoute(rootCtx context.Context, route string, handler http.HandlerFunc, middleware ...Middleware) error {
+func (hs *HttpServer) CreateRoute(
+	rootCtx context.Context,
+	route string,
+	handler http.HandlerFunc,
+	middleware ...Middleware,
+) error {
 	if hs == nil {
 		return fmt.Errorf("http server reciever nil")
 	}
@@ -41,14 +74,22 @@ func (hs *HttpServer) CreateRoute(rootCtx context.Context, route string, handler
 	return hs.createRoute(rootCtx, route, handler, middleware...)
 }
 
-func (hs *HttpServer) CreateRouteWithDefaultMiddleware() error {
+func (hs *HttpServer) CreateRouteWithApiHandling(
+	rootCtx context.Context,
+	route string,
+	handler http.HandlerFunc,
+	middleware ...Middleware,
+) error {
 	if hs == nil {
 		return fmt.Errorf("http server reciever nil")
 	}
 	if hs.Mux == nil {
 		return fmt.Errorf("internal http server nil")
 	}
-	return nil
+
+	return hs.createRoute(rootCtx, route, func(w http.ResponseWriter, r *http.Request) {
+		handler(w, r)
+	}, middleware...)
 }
 
 const defaultHttpTimeout = 30 * time.Second
@@ -61,7 +102,7 @@ func ChainMiddleware(h http.Handler, m ...Middleware) http.Handler {
 }
 
 func (hs *HttpServer) createRoute(rootCtx context.Context, route string, handler http.HandlerFunc, middleware ...Middleware) error {
-	hs.Mux.Handle(route, ChainMiddleware(handler, middleware...)) 
+	hs.Mux.Handle(route, ChainMiddleware(handler, middleware...))
 	return nil
 }
 
