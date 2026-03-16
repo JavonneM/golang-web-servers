@@ -43,6 +43,11 @@ func (s *MyAppServer) registerSystemRoutes(rootCtx context.Context, sh handler.S
 		return fmt.Errorf("failed to register healthcheck route %w", err)
 	}
 
+	err = s.CreateRouteWithApiHandling(rootCtx, "/v2/testapihandler/{id}", server.ApiHandler[any](sh.TestApiHandlerWithPathValues, false), middleware.Logger)
+	if err != nil {
+		return fmt.Errorf("failed to register healthcheck route %w", err)
+	}
+
 	return nil
 
 }
