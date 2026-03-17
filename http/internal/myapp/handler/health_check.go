@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/gofrs/uuid"
 	"github.com/javonnem/web_server/http/internal/myapp/dto"
 	"github.com/javonnem/web_server/http/internal/myapp/service"
 	"github.com/javonnem/web_server/http/pkg/server"
+	"github.com/javonnem/web_server/http/pkg/server/middleware"
 )
 
 type SystemHandlerImpl struct {
@@ -28,6 +30,9 @@ func NewSystemHandler(s service.SystemService) SystemHandler {
 
 func (sh *SystemHandlerImpl) HealthCheck(w http.ResponseWriter, r *http.Request) {
 	// Process input
+	traceID := r.Context().Value("request_trace_id").(string)
+	fmt.Printf("traceId: %s\n", traceID)
+
 	response, err := sh.SystemService.HealthCheck()
 	responseAsBytes, err := json.Marshal(response)
 	if err != nil {
@@ -41,6 +46,8 @@ func (sh *SystemHandlerImpl) HealthCheck(w http.ResponseWriter, r *http.Request)
 
 func (sh *SystemHandlerImpl) TestApiHandler(r *http.Request, request dto.TestApiHandlerRequest) server.HandlerResponse {
 	// Process input
+	traceID := r.Context().Value("request_trace_id").(string)
+	fmt.Printf("traceId: %s\n", traceID)
 	fmt.Printf("%+v\n", request)
 	fmt.Println(request.SomeField)
 	// Do work
@@ -62,6 +69,8 @@ func (sh *SystemHandlerImpl) TestApiHandler(r *http.Request, request dto.TestApi
 
 func (sh *SystemHandlerImpl) TestApiHandlerWithPathValues(r *http.Request, request any) server.HandlerResponse {
 	// Process input
+	traceID := r.Context().Value(middleware.ContextRequestTraceKey).(uuid.UUID)
+	fmt.Printf("traceId: %s\n", traceID)
 	id := r.PathValue("id")
 	pageAsString := r.URL.Query().Get("page")
 	fmt.Printf("id %s\n", id)

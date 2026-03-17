@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"net/http"
 	"time"
+
+	"github.com/javonnem/web_server/http/pkg/server/middleware"
 )
 
 type AppServer interface {
@@ -25,8 +27,10 @@ type HandlerResponse struct {
 	Data                 any
 }
 
-func ApiHandler[T any](h func(r *http.Request, body T) HandlerResponse, validate bool) http.HandlerFunc {
+func ApiHandler[T any](h func(*http.Request, T) HandlerResponse, validate bool) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println("API Handler")
+		fmt.Println(r.Context().Value(middleware.ContextRequestTraceKey))
 		var body T
 		err := json.NewDecoder(r.Body).Decode(&body)
 		if err != nil {
